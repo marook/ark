@@ -1,0 +1,73 @@
+#!/usr/bin/python2
+
+import argparse
+import json
+import os
+import subprocess
+
+def main():
+    args = parse_args()
+
+    root_command = args.command[0]
+    if(root_command == 'clone'):
+        return execute_clone(args)
+    else:
+        fail('Unknown command: %s' % (root_command, ))
+
+def parse_args():
+    p = argparse.ArgumentParser(description='Pull and push files via camlistore.')
+    p.add_argument('command', nargs='+')
+
+    return p.parse_args()
+
+def execute_clone(args):
+    permanodeRef = args.command[1] if len(args.command) > 1 else None
+    argsCloneName = args.command[2] if len(args.command) > 2 else None
+
+    claims = sorted(camtool('claims', permanodeRef)['claims'], key=lambda claim: claim['date'])
+    claim = claims[-1]
+    blobRef = claim['value']
+
+    blob = camget(blobRef)
+
+    if(blob['camliType'] == 'directory'):
+        cloneName = argsCloneName if not argsCloneName is None else blob['fileName']
+        print 'Cloning %s...' % (cloneName,)
+        camget('-o', cloneName, blobRef)
+        write_ark_config(cloneName, {
+            'claim': claim['value'],
+        })
+    else:
+        fail('Unknown blob camliType: %s' % (blob['camliType'], ))
+
+def camget(*args):
+    args_list = list(args)
+    args_list.insert(0, 'camget')
+    return camexec(*args_list)
+
+def camtool(*args):
+    args_list = list(args)
+    args_list.insert(0, 'camtool')
+    return camexec(*args_list)
+
+def camexec(*args):
+    out = subprocess.check_output(args)
+    if(out == ''):
+        return None
+    return json.loads(out)
+
+def write_ark_config(content_root, ark_config):
+    config_file_path = os.path.join(content_root, '.ark', 'config')
+    config_file_dir = os.path.dirname(config_file_path)
+
+    if(not os.path.exists(config_file_dir)):
+        os.makedirs(config_file_dir)
+
+    with open(config_file_path, 'w') as f:
+        json.dump(ark_config, f)
+
+def fail(msg):
+    print msg
+    exit(1)
+
+main()
