@@ -10,7 +10,9 @@ def main():
 
     root_command = args.command[0]
     if(root_command == 'clone'):
-        return execute_clone(args)
+        execute_clone(args)
+    elif(root_command == 'push'):
+        execute_push(args)
     else:
         fail('Unknown command: %s' % (root_command, ))
 
@@ -38,6 +40,9 @@ def execute_clone(args):
         })
     else:
         fail('Unknown blob camliType: %s' % (blob['camliType'], ))
+
+def execute_push(args):
+    pass # TODO
 
 def camget(*args):
     args_list = list(args)
