@@ -1,0 +1,22 @@
+ark - pull and push directories with camlistore
+
+1) Usage
+
+
+------------------------------------------------------------------------
+Usage
+
+You can clone directories which have a permanode assigned from
+camlistore onto your local file system:
+
+$ ark clone sha-xxxxxxxxxxxxxxxxxxxxx
+
+It will create a directory with the name of the directory in camlistore.
+Optionally you can supply another directory name to ark clone.
+
+Now you can change files etc. within the cloned directory.
+
+You can put you local changes back to camlistore via a push within the
+directory created by the ark clone:
+
+$ ark push
