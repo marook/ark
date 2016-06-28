@@ -25,19 +25,20 @@ def parse_args():
 
 def execute_clone(args):
     permanodeRef = args.command[1] if len(args.command) > 1 else None
+    argCloneName = args.command[2] if len(args.command) > 2 else None
 
-    claims = sorted(camtool('claims', permanodeRef)['claims'], key=lambda claim: claim['date'])
-    claim = claims[-1]
-    blobRef = claim['value']
+    meta = camtool('describe', permanodeRef)['meta']
+    blobRef = meta[permanodeRef]['permanode']['attr']['camliContent']
 
     blob = camget(blobRef)
 
     if(blob['camliType'] == 'directory'):
-        cloneName = blob['fileName']
+        cloneName = argCloneName if not argCloneName is None else blob['fileName']
         print 'Cloning %s...' % (cloneName,)
         camget('-o', cloneName, blobRef)
         write_ark_config(cloneName, {
-            'claim': claim['value'],
+            'claim': blobRef,
+            'cloneName': blob['fileName'],
         })
     else:
         fail('Unknown blob camliType: %s' % (blob['camliType'], ))
