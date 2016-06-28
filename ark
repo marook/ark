@@ -1,4 +1,5 @@
 #!/usr/bin/python2
+# -*-Python-*-
 
 import argparse
 import json
