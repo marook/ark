@@ -2,7 +2,7 @@ ark - pull and push directories with camlistore
 
 1) Requirements
 2) Usage
-
+3) License
 
 ------------------------------------------------------------------------
 Requirements
@@ -34,3 +34,9 @@ You can put you local changes back to camlistore via a push within the
 directory created by the ark clone:
 
 $ ark push
+
+
+------------------------------------------------------------------------
+License
+
+See COPYING for more details.
