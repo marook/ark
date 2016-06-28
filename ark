@@ -36,20 +36,34 @@ def execute_clone(args):
         cloneName = argCloneName if not argCloneName is None else blob['fileName']
         print 'Cloning %s...' % (cloneName,)
         camget('-o', cloneName, blobRef)
-        write_ark_config(cloneName, {
-            'claim': blobRef,
+        write_ark_config(os.path.join(cloneName, '.ark'), {
+            'permanode': permanodeRef,
+            'blob': blobRef,
             'cloneName': blob['fileName'],
         })
     else:
         fail('Unknown blob camliType: %s' % (blob['camliType'], ))
 
 def execute_push(args):
-    pass # TODO https://groups.google.com/d/msg/camlistore/4Ig2tug9V5s/J7C8hjStlaAJ
+    config = read_ark_config('.')
+
+    blobRef = camput('file', config['cloneName'])
+    camput('attr', config['permanode'], 'camliContent', blobRef)
+
+    config['blob'] = blobRef
+    update_ark_config('.', config)
+
+    print 'Pushed %s' % (blobRef, )
 
 def camget(*args):
     args_list = list(args)
     args_list.insert(0, 'camget')
     return camexec(*args_list)
+
+def camput(*args):
+    args_list = list(args)
+    args_list.insert(0, 'camput')
+    return subprocess.check_output(args_list).strip()
 
 def camtool(*args):
     args_list = list(args)
@@ -62,8 +76,33 @@ def camexec(*args):
         return None
     return json.loads(out)
 
-def write_ark_config(content_root, ark_config):
-    config_file_path = os.path.join(content_root, '.ark', 'config')
+def read_ark_config(cwd):
+    ark_config_path = os.path.join(find_ark_dir(cwd), 'config')
+
+    with open(ark_config_path, 'r') as f:
+        return json.load(f)
+
+def update_ark_config(cwd, ark_config):
+    ark_path = find_ark_dir(cwd)
+
+    write_ark_config(ark_path, ark_config)
+
+def find_ark_dir(cwd):
+    former_path = cwd
+
+    while True:
+        ark_dir_path = os.path.join(cwd, '.ark')
+        if(os.path.exists(ark_dir_path)):
+            return ark_dir_path
+
+        dir_path = os.path.basename(cwd)
+        if(dir_path == former_path):
+            raise Exception('Not an ark repository')
+
+        former_path = cwd
+
+def write_ark_config(ark_dir, ark_config):
+    config_file_path = os.path.join(ark_dir, 'config')
     config_file_dir = os.path.dirname(config_file_path)
 
     if(not os.path.exists(config_file_dir)):
