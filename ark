@@ -43,7 +43,7 @@ def execute_clone(args):
         fail('Unknown blob camliType: %s' % (blob['camliType'], ))
 
 def execute_push(args):
-    pass # TODO
+    pass # TODO https://groups.google.com/d/msg/camlistore/4Ig2tug9V5s/J7C8hjStlaAJ
 
 def camget(*args):
     args_list = list(args)
